@@ -1,11 +1,8 @@
 import streamlit as st
-import plotly.express as px
 
 from utils.pdf_reader import extract_text
 from utils.preprocess import preprocess_text
 from utils.entity_extractor import extract_entities
-from utils.similarity import find_similar_cases
-from utils.summarizer import generate_summary
 from utils.predictor import predict_case
 from utils.chatbot import legal_chatbot
 from utils.report_generator import generate_pdf_report
@@ -21,18 +18,16 @@ st.set_page_config(
 st.sidebar.title("⚖ Legal AI Dashboard")
 
 st.sidebar.info(
-    "AI-powered legal document analysis using NLP, Machine Learning, and Transformers."
+    "AI-powered legal document analysis using NLP and Machine Learning."
 )
 
 st.sidebar.markdown("---")
 
 st.sidebar.write("Features:")
 st.sidebar.write("✔ PDF Analysis")
-st.sidebar.write("✔ AI Summarization")
+st.sidebar.write("✔ AI Summary")
 st.sidebar.write("✔ Fraud Prediction")
-st.sidebar.write("✔ Semantic Search")
 st.sidebar.write("✔ AI Legal Chatbot")
-st.sidebar.write("✔ Analytics Dashboard")
 st.sidebar.write("✔ PDF Report Download")
 
 # Main title
@@ -64,16 +59,11 @@ if uploaded_file is not None:
     # Entity extraction
     entities = extract_entities(text)
 
-    # Similarity search
-    similarities = find_similar_cases(cleaned_text)
-
     # Prediction
     prediction, probability = predict_case(cleaned_text)
 
-    # Generate summary
-    with st.spinner("Generating AI Summary..."):
-
-        summary = generate_summary(text)
+    # Lightweight summary
+    summary = text[:1000]
 
     # Prediction label
     if prediction == 1:
@@ -94,7 +84,7 @@ if uploaded_file is not None:
         confidence_score
     )
 
-    # Top metrics
+    # Metrics
     st.markdown("---")
 
     col1, col2, col3 = st.columns(3)
@@ -133,12 +123,12 @@ if uploaded_file is not None:
 
         st.success("✅ Predicted Result: Non-Fraud Case")
 
-    # AI Summary
-    st.subheader("🧠 AI Generated Summary")
+    # Summary
+    st.subheader("🧠 AI Summary")
 
     st.info(summary)
 
-    # Download PDF report
+    # Download report
     st.subheader("📥 Download AI Report")
 
     with open(report_path, "rb") as pdf_file:
@@ -150,12 +140,12 @@ if uploaded_file is not None:
             mime="application/pdf"
         )
 
-    # Original extracted text
+    # Extracted text
     st.subheader("📄 Extracted PDF Text")
 
     st.write(text)
 
-    # Cleaned NLP text
+    # Cleaned text
     st.subheader("🧹 Cleaned NLP Text")
 
     st.write(cleaned_text)
@@ -173,43 +163,7 @@ if uploaded_file is not None:
 
         st.write("No entities found.")
 
-    # Similar cases
-    st.subheader("⚡ Similar Legal Cases")
-
-    for i, score in enumerate(similarities):
-
-        st.progress(float(score))
-
-        st.write(f"Case {i+1} Similarity Score: {score:.2f}")
-
-    # Analytics dashboard
-    st.subheader("📊 Legal Analytics Dashboard")
-
-    case_names = [
-        "Case 1",
-        "Case 2",
-        "Case 3",
-        "Case 4"
-    ]
-
-    scores = similarities.tolist()
-
-    fig = px.bar(
-
-        x=case_names,
-        y=scores,
-
-        labels={
-            "x": "Legal Cases",
-            "y": "Similarity Score"
-        },
-
-        title="Legal Case Similarity Analysis"
-    )
-
-    st.plotly_chart(fig, use_container_width=True)
-
-    # AI chatbot
+    # Chatbot
     st.subheader("🤖 AI Legal Chatbot")
 
     user_question = st.text_input(
