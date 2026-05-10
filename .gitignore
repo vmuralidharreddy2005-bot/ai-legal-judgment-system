@@ -1,0 +1,4 @@
+venv/
+__pycache__/
+temp_case.pdf
+temp_case.txt
