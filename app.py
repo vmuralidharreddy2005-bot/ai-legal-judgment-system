@@ -8,6 +8,7 @@ from utils.similarity import find_similar_cases
 from utils.summarizer import generate_summary
 from utils.predictor import predict_case
 from utils.chatbot import legal_chatbot
+from utils.report_generator import generate_pdf_report
 
 # Page settings
 st.set_page_config(
@@ -27,12 +28,12 @@ st.sidebar.markdown("---")
 
 st.sidebar.write("Features:")
 st.sidebar.write("✔ PDF Analysis")
-st.sidebar.write("✔ NLP Processing")
 st.sidebar.write("✔ AI Summarization")
 st.sidebar.write("✔ Fraud Prediction")
 st.sidebar.write("✔ Semantic Search")
 st.sidebar.write("✔ AI Legal Chatbot")
 st.sidebar.write("✔ Analytics Dashboard")
+st.sidebar.write("✔ PDF Report Download")
 
 # Main title
 st.title("⚖ AI Legal Judgment Prediction System")
@@ -74,6 +75,25 @@ if uploaded_file is not None:
 
         summary = generate_summary(text)
 
+    # Prediction label
+    if prediction == 1:
+
+        prediction_label = "Fraud Case"
+
+    else:
+
+        prediction_label = "Non-Fraud Case"
+
+    confidence_score = max(probability) * 100
+
+    # Generate PDF report
+    report_path = generate_pdf_report(
+
+        summary,
+        prediction_label,
+        confidence_score
+    )
+
     # Top metrics
     st.markdown("---")
 
@@ -97,7 +117,7 @@ if uploaded_file is not None:
 
         st.metric(
             label="Prediction Confidence",
-            value=f"{max(probability)*100:.2f}%"
+            value=f"{confidence_score:.2f}%"
         )
 
     st.markdown("---")
@@ -117,6 +137,18 @@ if uploaded_file is not None:
     st.subheader("🧠 AI Generated Summary")
 
     st.info(summary)
+
+    # Download PDF report
+    st.subheader("📥 Download AI Report")
+
+    with open(report_path, "rb") as pdf_file:
+
+        st.download_button(
+            label="Download PDF Report",
+            data=pdf_file,
+            file_name="AI_Legal_Report.pdf",
+            mime="application/pdf"
+        )
 
     # Original extracted text
     st.subheader("📄 Extracted PDF Text")
@@ -162,7 +194,6 @@ if uploaded_file is not None:
 
     scores = similarities.tolist()
 
-    # Plotly chart
     fig = px.bar(
 
         x=case_names,
